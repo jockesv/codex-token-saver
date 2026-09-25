@@ -1,0 +1,11 @@
+# Huvudagenten (orkestratorn) kör Sol: planerar, tar beslut, delegerar.
+model = "gpt-6-sol"
+model_reasoning_effort = "medium"
+
+[agents]
+enabled = true
+# Tak för parallella subagenter per session – håller nere tokenförbrukningen.
+max_concurrent_threads_per_session = 4
+# Fallback för subagenter som inte anger egen modell.
+default_subagent_model = "gpt-6-luna"
+default_subagent_reasoning_effort = "medium"
