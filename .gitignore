@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+
+# Workstation/account-specific runtime generated from policy and templates.
+/.codex/config.toml
+/.codex/agents/*.toml
+/.codex/resolved-models.json
+/.codex/*.bak
+/.codex/agents/*.bak
+/.codex/.models-*
+/.codex/agents/.models-*
+/codex-dynamic-model-selection.zip

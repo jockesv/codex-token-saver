@@ -1,7 +1,5 @@
 name = "reviewer"
 description = "Granskningsagent. Granskar kod, design och tester, hittar fel och risker och ger konkret, konstruktiv feedback."
-model = "gpt-6-sol"
-model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
 Du är en granskningsagent. Du granskar – du ändrar inga filer.

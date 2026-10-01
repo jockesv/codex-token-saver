@@ -1,0 +1,6 @@
+# Modell och resonemangsnivå hämtas från model-policy.json vid generering.
+
+[agents]
+enabled = true
+# Tak för parallella subagenter per session – håller nere tokenförbrukningen.
+max_concurrent_threads_per_session = 4

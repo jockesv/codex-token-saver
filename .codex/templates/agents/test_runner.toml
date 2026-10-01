@@ -1,7 +1,5 @@
 name = "test_runner"
 description = "Testagent. Kör tester, lint och bygge och rapporterar endast det som fallerar. Används i stället för att köra tester i huvudagenten."
-model = "gpt-6-luna"
-model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 developer_instructions = """
 Du är en testagent. Du kör tester, lint och bygge – du ändrar inte källkod.

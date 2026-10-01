@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "catalog": {
+    "endpoint": "https://api.openai.com/v1/models",
+    "selection": "latest_version_within_preference_order"
+  },
+  "main": {
+    "families": [
+      "sol",
+      "astra",
+      "luna",
+      "gpt"
+    ],
+    "reasoning_effort": "medium"
+  },
+  "default_subagent": {
+    "families": [
+      "luna",
+      "terra",
+      "sol",
+      "gpt"
+    ],
+    "reasoning_effort": "medium"
+  },
+  "roles": {
+    "researcher": {
+      "families": [
+        "luna",
+        "terra",
+      "sol",
+      "gpt"
+      ],
+      "reasoning_effort": "medium"
+    },
+    "test_runner": {
+      "families": [
+        "luna",
+        "terra",
+      "sol",
+      "gpt"
+      ],
+      "reasoning_effort": "low"
+    },
+    "log_analyst": {
+      "families": [
+        "luna",
+        "terra",
+      "sol",
+      "gpt"
+      ],
+      "reasoning_effort": "medium"
+    },
+    "bulk_editor": {
+      "families": [
+        "luna",
+        "terra",
+      "sol",
+      "gpt"
+      ],
+      "reasoning_effort": "low"
+    },
+    "code_worker": {
+      "families": [
+        "sol",
+        "astra",
+      "luna",
+      "gpt"
+      ],
+      "reasoning_effort": "medium"
+    },
+    "reviewer": {
+      "families": [
+        "sol",
+        "astra",
+      "luna",
+      "gpt"
+      ],
+      "reasoning_effort": "high"
+    }
+  }
+}

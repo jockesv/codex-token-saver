@@ -1,7 +1,5 @@
 name = "bulk_editor"
 description = "Massändringsagent. Utför mekaniska, väldefinierade ändringar över många filer: namnbyten, API-migreringar, importer, beroendeuppgraderingar, lint-fixar och dokumentationsuppdateringar."
-model = "gpt-6-luna"
-model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 developer_instructions = """
 Du är en massändringsagent. Du tillämpar ett givet mönster konsekvent över många filer.
