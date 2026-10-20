@@ -1,40 +1,48 @@
-# Codex-agenter – mindre tokens, mer gjort
+# Codex-agenter – liten kontext, rätt modell för uppgiften
 
 En färdig konfiguration för Codex med specialiserade subagenter. Syftet är att minska
-tokenförbrukningen genom att låta billiga, snabba modeller göra det tunga läsjobbet,
-medan den dyrare modellen bara används där det krävs omdöme.
+kostnaden och hålla huvudagentens kontext liten genom att låta billiga, snabba modeller
+göra avgränsade läs- och analysjobb. Den totala tokenförbrukningen minskar inte garanterat.
 
 Se lathunden i [`docs/codex-agent-setup.png`](docs/codex-agent-setup.png) för en visuell översikt.
 
 ## Idén i korthet
 
-- **Sol** (`gpt-6-sol`) – resonerar, planerar och fattar beslut. Dyr.
-- **Luna** (`gpt-6-luna`) – söker, läser och utför. Snabb och betydligt billigare.
+- **GPT-6.1 Sol** (`gpt-6.1-sol`) – resonerar, planerar och fattar beslut.
+- **GPT-6 Luna** (`gpt-6-luna`) – söker, läser och utför. Snabb och betydligt billigare.
+- **GPT-6 Astra** (`gpt-6-astra`) – för de mest krävande uppgifterna; ingår som
+  prisreferens men används inte i den här konfigurationen.
 
-Det mesta av tokenförbrukningen i vardagen kommer inte från det modellen skriver, utan från
-det den *läser*: filer, testutdata, byggloggar och CI-loggar. Därför gäller principen
-**Luna först**: allt som läser mycket men levererar lite och väldefinierat går till Luna.
-Sol används för design, icke-trivial logik och granskning.
+Lästunga uppgifter kan förbruka mycket input-tokens: filer, testutdata, byggloggar och
+CI-loggar. Därför passar Luna för avgränsade läs- och analysjobb, medan Sol används för
+design, icke-trivial logik och granskning.
 
 En extra vinst med subagenter är att huvudagentens kontext hålls liten. Subagenten läser
 tusen rader testutdata, huvudagenten får tillbaka tre rader om vad som gick fel.
 
 ## Priser
 
-USD per 1M tokens, per 2026-09-25. *Kort kontext* är upp till 272k tokens, *lång* är mer.
+USD per 1M tokens med **Standard-bearbetning**, kontrollerat 2026-10-20 mot
+[OpenAI Docs – API-priser](https://developers.openai.com/api/docs/pricing).
+*Kort kontext* innebär högst 272 000 input-tokens i prompten, *lång* innebär fler.
 
 | Modell | Kontext | Input | Cachad input | Cache-skrivning | Output |
 |---|---|---:|---:|---:|---:|
 | `gpt-6-astra` | kort | $10.00 | $1.00 | $12.50 | $50.00 |
 | | lång | $20.00 | $2.00 | $25.00 | $75.00 |
-| `gpt-6-sol` | kort | $2.00 | $0.20 | $2.50 | $10.00 |
-| | lång | $4.00 | $0.40 | $5.00 | $15.00 |
+| `gpt-6.1-sol` | kort | $2.00 | $0.10 | $2.50 | $10.00 |
+| | lång | $4.00 | $0.20 | $5.00 | $15.00 |
 | `gpt-6-luna` | kort | $0.10 | $0.01 | $0.125 | $0.50 |
 | | lång | $0.20 | $0.02 | $0.25 | $0.75 |
 
-Luna kostar en tjugondel av Sol. Över 272k tokens dubbleras priset för input och
-output-priset höjs med 50 %, ännu ett skäl att hålla huvudagentens kontext liten.
-Astra används inte i den här konfigurationen.
+Lunas input, cache-skrivning och output kostar en tjugondel av Sols; cachad input
+kostar en tiondel. När prompten överstiger 272 000 input-tokens dubbleras input- och
+cache-priserna och output-priset höjs med 50 % för hela anropet, ännu ett skäl att
+hålla huvudagentens kontext liten.
+
+Batch och Flex kostar 50 % av Standard; Fast kostar dubbelt så mycket.
+Regional bearbetning medför ett påslag på 10 % där den erbjuds. Tabellen visar
+API-priser; användning inom en ChatGPT-/Codex-prenumeration följer abonnemangets villkor.
 
 ## Innehåll
 
@@ -58,13 +66,29 @@ Astra används inte i den här konfigurationen.
 
 | Agent | Modell | Sandbox | Använd för |
 |---|---|---|---|
-| *huvudagenten* | Sol | – | Orkestrering: planera, bryta ner, besluta, delegera, verifiera |
-| `researcher` | Luna | read-only | Hitta kod, läsa dokumentation, svara på "var/hur görs X?" |
+| *huvudagenten* | Sol | – | Orkestrering: planera, bryta ner, besluta, delegera, integrera och verifiera |
+| `researcher` | Luna | read-only | Lästunga, avgränsade undersökningar; små läsuppgifter görs direkt |
 | `test_runner` | Luna | workspace-write | Köra tester, lint och bygge – returnerar bara felen |
 | `log_analyst` | Luna | read-only | Hitta rotorsak i stora loggar och CI-körningar |
 | `bulk_editor` | Luna | workspace-write | Namnbyten, migreringar, importer, beroendeuppgraderingar, lint-fixar, README/changelog/PR-texter |
-| `code_worker` | Sol | workspace-write | Implementera avgränsade uppgifter med icke-trivial logik |
+| `code_worker` | Sol | workspace-write | Implementera avgränsade uppgifter med icke-trivial logik och skriva tester vid behov |
 | `reviewer` | Sol | read-only | Granska korrekthet, säkerhet och testtäckning |
+
+Huvudagenten och alla agenter utom `reviewer` använder `medium` effort; `reviewer` använder
+`high`.
+
+## Arbetsfördelning och eskalering
+
+Gör små läs- och ändringsuppgifter direkt. Använd agenter för lästunga undersökningar,
+mekaniska massändringar och avgränsad implementation. `code_worker` skriver eller uppdaterar
+tester när ändringen behöver dem; `test_runner` kör all testning, lint och bygge, även på
+förslag från `code_worker` och `bulk_editor`.
+
+Om en Luna-agent inte kan belägga ett svar eller en orsak, eller stöter på en fråga utanför
+uppdraget, gissar den inte och upprepar inte samma försök. Den rapporterar
+osäkerheten, undersökt underlag med sökväg och radnummer eller kommandoutdata samt en konkret
+fråga. Orkestratorn avgör om den ska ta över, höja effort eller använda Sol. Agenten byter
+inte modell själv.
 
 ## Kom igång
 
@@ -121,8 +145,9 @@ Byt namn på UserService till AccountService i hela kodbasen med bulk_editor.
 Granska mina ändringar mot main med reviewer innan jag skapar PR:en.
 ```
 
-Tips: flera oberoende deluppgifter kan köras parallellt – t.ex. tre `researcher` som
-undersöker olika delar av systemet samtidigt.
+Flera oberoende deluppgifter kan köras parallellt. Delegering har dock overhead, och fler
+parallella agenter garanterar inte lägre kostnad. Mät kostnad, tid och omarbete för
+jämförbara uppgifter innan du drar slutsatser om besparingen.
 
 ## Sessionsvanor som sparar tokens
 
@@ -139,8 +164,10 @@ Konfigurationen hjälper, men vanorna gör minst lika stor skillnad:
 ## Anpassa
 
 - **Byta modell eller resonemangsnivå:** ändra `model` och `model_reasoning_effort` i
-  respektive fil i `.codex/agents/`. Luna stöder `medium` och uppåt, Sol stöder `low` och uppåt.
-  Blir Lunas svar för tunna, testa `high` innan du byter till Sol.
+  respektive fil i `.codex/agents/`. Luna stöder `none`, `low`, `medium`, `high`, `xhigh`
+  och `max`; Sol stöder `low`, `medium`, `high`, `xhigh` och `max`.
+  Vid tunna eller osäkra Luna-svar väljer orkestratorn nästa steg efter uppgiftens svårighet:
+  den kan höja effort eller ta över med Sol.
 - **Antal parallella subagenter:** `max_concurrent_threads_per_session` i `.codex/config.toml`
   (satt till 4 för att hålla kostnaden nere).
 - **Ny agent:** skapa en ny `.toml`-fil i `.codex/agents/` med `name`, `description` och
@@ -152,5 +179,9 @@ Konfigurationen hjälper, men vanorna gör minst lika stor skillnad:
 
 ## Referenser
 
+- [OpenAI Docs – aktuella modellfamiljer](https://developers.openai.com/api/docs/models)
+- [OpenAI Docs – API-priser](https://developers.openai.com/api/docs/pricing)
+- [OpenAI Docs – GPT-6.1 Sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol)
+- [OpenAI Docs – GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna)
 - [Codex – subagenter](https://learn.chatgpt.com/docs/agent-configuration/subagents)
 - [Codex – modeller](https://learn.chatgpt.com/docs/models)

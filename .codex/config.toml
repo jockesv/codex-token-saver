@@ -4,8 +4,9 @@ model_reasoning_effort = "medium"
 
 [agents]
 enabled = true
-# Tak för parallella subagenter per session – håller nere tokenförbrukningen.
+# Tak för parallella subagenter per session; begränsar antalet samtidiga subagenter.
 max_concurrent_threads_per_session = 4
 # Fallback för subagenter som inte anger egen modell.
+# Standardmodeller och effort behålls; eventuell eskalering beslutas av orkestratorn.
 default_subagent_model = "gpt-6-luna"
 default_subagent_reasoning_effort = "medium"

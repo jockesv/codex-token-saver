@@ -1,0 +1,43 @@
+Use case: infographic-diagram. Edit target: supplied current Swedish Codex infographic. Update it to reflect revised responsibility and escalation rules. Preserve the polished navy/white layout, sun and moon header art, six colored agent cards, legible Swedish typography, and exact model IDs/configuration. May increase canvas height to keep text large and add a readable rules section. No Terra or Astra. No invented settings or costs.
+Title "Codex Lathund"; change subtitle to "Liten kontext. Rätt modell för uppgiften." (avoid promising total token reduction).
+Header models: "GPT-6.1 SOL", "Planerar. Beslutar. Implementerar. Granskar."; "GPT-6 LUNA", "Söker. Läser. Kör. Sammanfattar."
+"Två modeller. Sex subagenter."
+Orchestrator card: "Huvudagent · Orkestrator", "gpt-6.1-sol · medium", "Planerar och delar upp uppgifter", "Tar arkitektur- och designbeslut", "Avgör när osäkra uppgifter ska tas över".
+Six cards, same model/effort/sandbox as original:
+researcher — "gpt-6-luna · medium", "read-only", "Lästunga, avgränsade undersökningar"
+test_runner — "gpt-6-luna · medium", "workspace-write", "Kör tester, lint och bygge. Rapporterar kort."
+log_analyst — "gpt-6-luna · medium", "read-only", "Filtrerar loggar och belägger trolig rotorsak"
+bulk_editor — "gpt-6-luna · medium", "workspace-write", "Utför mekaniska ändringar enligt givet mönster"
+code_worker — "gpt-6.1-sol · medium", "workspace-write", "Implementerar logik och skriver tester vid behov"
+reviewer — "gpt-6.1-sol · high", "read-only", "Granskar kod, tester, design och risker"
+
+Replace generic workflow with explicit strip:
+"Från kod till verifierat resultat"
+"Orkestrator → code_worker → test_runner → Orkestrator"
+Small caption: "Kodagenten skriver tester. Testagenten kör dem. Orkestratorn bedömer resultatet."
+
+Add clear prominent rules panel with heading "När ska uppgiften lämnas över?"
+"Små läs- och ändringsuppgifter görs direkt av huvudagenten."
+"Tester, lint och bygge körs alltid av test_runner."
+"Vid osäkerhet lämnar Luna underlag och en konkret fråga till orkestratorn."
+"Orkestratorn avgör om uppgiften behöver högre resonemangsnivå eller Sol."
+"Oberoende deluppgifter kan köras parallellt."
+
+Bottom left keep exact current configuration as legible monospaced code:
+.codex/config.toml
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 4
+default_subagent_model = "gpt-6-luna"
+default_subagent_reasoning_effort = "medium"
+
+Bottom right panel heading "Följ upp besparingen"
+"Agentfiler: .codex/agents/*.toml"
+"AGENTS.md styr arbetsfördelningen."
+"Delegering har en extra kostnad."
+"Billigare tokens betyder inte automatiskt färre tokens."
+"Mät kostnad, tid och omarbete."
+Small date "Konfiguration: 2026-10-20".
+All text Swedish with accurate accents. Use only text specified, do not repeat old misleading wording. Model IDs must be exact gpt-6.1-sol / gpt-6-luna. reviewer high, all others medium. No watermark.
